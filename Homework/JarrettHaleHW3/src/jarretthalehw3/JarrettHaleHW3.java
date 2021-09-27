@@ -14,6 +14,7 @@ public class JarrettHaleHW3 {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         int size = 3;
+        //gets the size of the board from the user
         do{
             System.out.print("Enter a size for the board: ");
             size = scanner.nextInt();
@@ -22,9 +23,12 @@ public class JarrettHaleHW3 {
             }
         }while(size < 2 || size > 14 || size % 2 != 0);
         
+        //keeps giving new boards while the user wants to play,
+        //prompts after each game
         char wantToPlay = 'Y';
         while(wantToPlay == 'Y'){
             gameBoard game = new gameBoard(size);
+            game.printBoardValuesShown();
             game.playGame(); 
             System.out.println("Wanna play again? (y/n)");
             wantToPlay = Character.toUpperCase(scanner.next().charAt(0));
@@ -38,9 +42,15 @@ public class JarrettHaleHW3 {
 }
 
 class gameBoard{
+    //holds the int value for each tile
     int[][] board;
+    
+    //holds if each tile has been found
     boolean[][] foundMatches;
+    
+    //controls if game is in play or not
     boolean gameWon;
+    
     int rows;
     int cols;
     
@@ -53,19 +63,34 @@ class gameBoard{
         foundMatches = new boolean[size][size];
     }
     
+    
+    //To be honest I don't know why this gets stuck generating random numbers on board size 6+
     void generateBoard(int size){
         int maxSize = size * 2;
         
         int[] occurrenceCount = new int[maxSize];
         
+        //go through every tile
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
                 boolean placed = false;
                 while(!placed){
+                    //generates a random number from 0 to length of occurrenceCount
                     int random = (int)(Math.random() * maxSize);
                     if(occurrenceCount[random] == 0 || occurrenceCount[random] == 1){
-                        board[i][j] = random;
+                        //adds one to value if added to board
+                        board[i][j] = random + 1;
+                        
+                        //add one to the occurrence
                         occurrenceCount[random]++;
+                        
+                        //point is placed
+                        placed = true;
+                        break;
+                    }
+                    
+                    //if the board is completely full then you can exit
+                    if(isBoardPopulated()){
                         break;
                     }
                 }
@@ -76,6 +101,7 @@ class gameBoard{
     public void playGame(){
         Scanner scanner = new Scanner(System.in);
         
+        //keeps serving turns until game condition is swapped
         while(gameWon == false){
             
             int cardOneRow = 0;
@@ -122,15 +148,29 @@ class gameBoard{
 
             printBoardShowPair(cardOneRow, cardOneCol, cardTwoRow, cardTwoCol);
 
-            if(this.board[cardOneRow][cardOneCol] == this.board[cardTwoRow][cardTwoCol]){
+            //checks if cards are the same int value on board and not the same card
+            if((this.board[cardOneRow][cardOneCol] == this.board[cardTwoRow][cardTwoCol]) && !(cardOneRow == cardTwoRow && cardOneCol == cardTwoCol)){
                 System.out.println("A match!");
                 foundMatches[cardOneRow][cardOneCol] = true;
                 foundMatches[cardTwoRow][cardTwoCol] = true;
             }
+            
+            //check win condidtion at end of a turn
             this.checkWin();
         }
     }
     
+    boolean isBoardPopulated(){
+        for (int i = 0; i < this.rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if(this.board[i][j] == 0)
+                    return false;
+            }
+        }
+        return true;
+    }
+    
+    //runs through and if it enounters a single not found pair then the game is not over
     public boolean checkWin(){
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -145,6 +185,8 @@ class gameBoard{
     }
     
     //BELOW HERE THE PRINT FUNCTIONS LIVE -- NOT PRETTY
+    
+    //will show every value without censoring
     public void printBoardValuesShown(){
         System.out.print("  ");
         for (int i = 0; i < cols; i++) {
@@ -162,6 +204,7 @@ class gameBoard{
         System.out.println("");
     }
     
+    //normal one used during game. Shows values that have already been found by player
     public void printBoardShowFoundValues(){
         System.out.print("  ");
         for (int i = 0; i < cols; i++) {
@@ -184,6 +227,7 @@ class gameBoard{
         System.out.println("");
     }
     
+    //This is the initial turn board, prints with every value hidden from player
     public void printBoardValuesHidden(){
         System.out.print("   ");
         for (int i = 0; i < cols; i++) {
@@ -201,6 +245,7 @@ class gameBoard{
         System.out.println("");
     }
     
+    //this one is used during the turn to show either already found tiles or tiles selected by player
     public void printBoardShowPair(int row1, int col1, int row2, int col2){
         System.out.print("   ");
         for (int i = 0; i < cols; i++) {
